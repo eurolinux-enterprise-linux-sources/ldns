@@ -8,7 +8,7 @@
 Summary: Low-level DNS(SEC) library with API
 Name: ldns
 Version: 1.6.16
-Release: 5%{?dist}
+Release: 7%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}/%{name}-%{version}.tar.gz
@@ -146,6 +146,12 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.6.16-7
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1.6.16-6
+- Mass rebuild 2013-12-27
+
 * Tue Jul 23 2013 Tomas Hozza <thozza@redhat.com> - 1.6.16-5
 - Fix compiler warnings and one uninitialized value
 - make ldns-config multilib clean
