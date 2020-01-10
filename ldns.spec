@@ -8,14 +8,13 @@
 Summary: Low-level DNS(SEC) library with API
 Name: ldns
 Version: 1.6.16
-Release: 10%{?dist}
+Release: 5%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/%{name}/
 Source: http://www.nlnetlabs.nl/downloads/%{name}/%{name}-%{version}.tar.gz
 Patch0: %{name}-1.6.16-uninitialized-value-compiler-warnings.patch
 Patch1: %{name}-1.6.16-multilib.patch
 Patch2: %{name}-1.6.16-manpage-fixes-bundle.patch
-Patch3: %{name}-1.6.16-dsa.patch
 Group: System Environment/Libraries
 BuildRequires: perl, libpcap-devel, openssl-devel, gcc-c++, doxygen,
 # for snapshots only
@@ -35,7 +34,6 @@ packets.
 Summary: Development package that includes the ldns header files
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Requires: pkgconfig
 
 %description devel
 The devel package contains the ldns library and the include files
@@ -64,49 +62,30 @@ This package contains documentation for the ldns library
 %patch0 -p2
 %patch1 -p1
 %patch2 -p1 -b .manpage
-%patch3 -p1
 # To built svn snapshots
 # rm config.guess config.sub ltmain.sh
 # aclocal
 # libtoolize -c --install
 # autoreconf --install
 
-# fixup .pc file
-sed -i "s/@includedir@/@includedir@\/ldns/" packaging/libldns.pc.in
-
 %build
 # as long as ECC is banned we cannot enable GOST or ECDSA
-%configure \
-    --disable-rpath \
-    --disable-static \
-    --disable-gost \
-    --enable-ecdsa \
-    --with-ca-file=/etc/pki/tls/certs/ca-bundle.trust.crt \
-    --with-ca-path=/etc/pki/tls/certs/ \
+%configure --disable-rpath --disable-static --disable-gost --disable-ecdsa \
+ --with-ca-file=/etc/pki/tls/certs/ca-bundle.trust.crt --with-ca-path=/etc/pki/tls/certs/ \
 %if %{with_python}
-    --with-pyldns \
+ --with-pyldns \
 %endif
-    --with-trust-anchor=%{_sharedstatedir}/unbound/root.key
+  --with-trust-anchor=%{_sharedstatedir}/unbound/root.key
 
-(cd drill ;
-%configure \
-    --disable-rpath \
-    --disable-static \
-    --disable-gost \
-    --enable-ecdsa \
-    --with-ca-file=/etc/pki/tls/certs/ca-bundle.trust.crt \
-    --with-ca-path=/etc/pki/tls/certs/ \
-    --with-trust-anchor=%{_sharedstatedir}/unbound/root.key
+(cd drill ; %configure --disable-rpath --disable-static --disable-gost \
+   --disable-ecdsa \
+   --with-ca-file=/etc/pki/tls/certs/ca-bundle.trust.crt --with-ca-path=/etc/pki/tls/certs/ \
+   --with-trust-anchor=%{_sharedstatedir}/unbound/root.key
 )
-(cd examples ;
-%configure \
-    --disable-rpath \
-    --disable-static \
-    --disable-gost \
-    --enable-ecdsa \
-    --with-ca-file=/etc/pki/tls/certs/ca-bundle.trust.crt \
-    --with-ca-path=/etc/pki/tls/certs/ \
-    --with-trust-anchor=%{_sharedstatedir}/unbound/root.key
+(cd examples ; %configure --disable-rpath --disable-static --disable-gost \
+   --disable-ecdsa \
+   --with-ca-file=/etc/pki/tls/certs/ca-bundle.trust.crt --with-ca-path=/etc/pki/tls/certs/ \
+   --with-trust-anchor=%{_sharedstatedir}/unbound/root.key
 )
 
 make %{?_smp_mflags} 
@@ -119,9 +98,6 @@ rm -rf %{buildroot}
 
 make DESTDIR=%{buildroot} INSTALL="%{__install} -p" install 
 make DESTDIR=%{buildroot} INSTALL="%{__install} -p" install-doc
-
-# install pkg-config file
-install -D -m 644 packaging/libldns.pc %{buildroot}%{_libdir}/pkgconfig/ldns.pc
 
 # don't package xml files
 rm doc/*.xml
@@ -151,7 +127,6 @@ rm -rf %{buildroot}
 %files devel
 %defattr(-,root,root,-)
 %{_libdir}/libldns*so
-%{_libdir}/pkgconfig/ldns.pc
 %{_bindir}/ldns-config
 %dir %{_includedir}/ldns
 %{_includedir}/ldns/*.h
@@ -171,21 +146,6 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
-* Wed May 18 2016 Pavel Šimerda <psimerda@redhat.com> - 1.6.16-10
-- Resolves: #1077799 - ldns could produce bad DSA sign
-
-* Tue May 17 2016 Tomas Hozza <thozza@redhat.com> - 1.6.16-9
-- Fix and install the .pc (pkg-config) file (#1096925)
-
-* Thu May 12 2016 Tomas Hozza <thozza@redhat.com> - 1.6.16-8
-- Enabled ECDSA support (#1265605)
-
-* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.6.16-7
-- Mass rebuild 2014-01-24
-
-* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1.6.16-6
-- Mass rebuild 2013-12-27
-
 * Tue Jul 23 2013 Tomas Hozza <thozza@redhat.com> - 1.6.16-5
 - Fix compiler warnings and one uninitialized value
 - make ldns-config multilib clean
